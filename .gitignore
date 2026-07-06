@@ -1,0 +1,43 @@
+# Dependencies (Folder installasi library - sangat besar dan tidak perlu di-push)
+node_modules/
+
+# Build Output (Hasil kompilasi TypeScript ke JavaScript)
+dist/
+build/
+out/
+.tsbuildinfo
+
+# Secrets & Environment Variables (Variabel rahasia dan password)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.test
+
+# Prisma Client (Auto-generated client, akan digenerate otomatis saat deployment)
+/src/generated/prisma/
+
+# Logs (Catatan error/debug dari runtime package manager)
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Testing & Coverage (Hasil laporan cakupan test)
+coverage/
+.nyc_output/
+
+# OS Files (File temporary bawaan Sistem Operasi)
+.DS_Store
+Thumbs.db
+
+# IDE Configurations (Konfigurasi editor personal agar tidak bentrok dengan tim lain)
+.vscode/
+.idea/
+*.suo
+*.sw?
+
+# Ebook Extracted Text (File txt hasil ekstrak sementara)
+Backend_Development_Ebook_v2.txt
