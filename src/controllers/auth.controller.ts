@@ -10,7 +10,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
   // Cek email sudah terdaftar belum
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
-    res.status(400).json({ error: "Email sudah terdaftar" });
+    res.status(400).json({ status: 400, message: "Email already registered" });
     return;
   }
 
@@ -22,7 +22,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
   });
 
   res.status(201).json({
-    message: "Registrasi berhasil",
+    status: 201,
+    message: "Successfully Registered",
     data: { id: user.id, name: user.name, email: user.email },
   });
 };
@@ -34,21 +35,21 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   // Cek user terdaftar
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) {
-    res.status(400).json({ error: "Email atau password salah" });
+    res.status(400).json({ status: 400, message: "Email or password is not correct" });
     return;
   }
 
   // Cek password
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) {
-    res.status(400).json({ error: "Email atau password salah" });
+    res.status(400).json({ status: 400, message: "Email or password is not correct" });
     return;
   }
 
   // Generate JWT Token
   const secret = process.env.JWT_SECRET;
   if (!secret) {
-    throw new Error("JWT_SECRET tidak terdefinisi di .env");
+    throw new Error("JWT_SECRET is not defined in .env");
   }
 
   const token = jwt.sign(
@@ -58,7 +59,8 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   );
 
   res.json({
-    message: "Login berhasil",
+    status: 200,
+    message: "Successfully Logged In",
     token,
     data: { id: user.id, name: user.name, email: user.email },
   });

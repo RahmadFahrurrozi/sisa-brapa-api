@@ -13,7 +13,7 @@ describe("POST /api/auth/register", () => {
       });
 
     expect(response.status).toBe(201);
-    expect(response.body.message).toBe("Registrasi berhasil");
+    expect(response.body.message).toBe("Successfully Registered");
     expect(response.body.data.password).toBeUndefined();
     expect(response.body.data.email).toBe("budi@example.com");
   });
@@ -30,7 +30,7 @@ describe("POST /api/auth/register", () => {
     });
 
     expect(response.status).toBe(400);
-    expect(response.body.error).toBe("Email sudah terdaftar");
+    expect(response.body.message).toBe("Email already registered");
   });
 
   it("should return 400 if required fields missing", async () => {

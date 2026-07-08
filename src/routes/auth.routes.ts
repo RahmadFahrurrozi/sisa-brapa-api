@@ -9,14 +9,14 @@ export const authRoutes = Router();
  * @swagger
  * tags:
  *   name: Auth
- *   description: API Autentikasi Pengguna
+ *   description: User Authentication API
  */
 
 /**
  * @swagger
  * /auth/register:
  *   post:
- *     summary: Registrasi pengguna baru
+ *     summary: Register a new user
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -42,14 +42,18 @@ export const authRoutes = Router();
  *                 example: password123
  *     responses:
  *       201:
- *         description: Registrasi berhasil
+ *         description: Successfully Registered
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 201
  *                 message:
  *                   type: string
+ *                   example: Successfully Registered
  *                 data:
  *                   type: object
  *                   properties:
@@ -60,7 +64,7 @@ export const authRoutes = Router();
  *                     email:
  *                       type: string
  *       400:
- *         description: Validasi gagal atau email sudah terdaftar
+ *         description: Validation failed or email already registered
  */
 authRoutes.post("/register", validate(registerSchema), register);
 
@@ -68,7 +72,7 @@ authRoutes.post("/register", validate(registerSchema), register);
  * @swagger
  * /auth/login:
  *   post:
- *     summary: Login pengguna untuk mendapatkan token JWT
+ *     summary: Login user to retrieve JWT token
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -90,14 +94,18 @@ authRoutes.post("/register", validate(registerSchema), register);
  *                 example: password123
  *     responses:
  *       200:
- *         description: Login berhasil, token dikembalikan
+ *         description: Successfully Logged In, token returned
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 200
  *                 message:
  *                   type: string
+ *                   example: Successfully Logged In
  *                 token:
  *                   type: string
  *                 data:
@@ -110,6 +118,6 @@ authRoutes.post("/register", validate(registerSchema), register);
  *                     email:
  *                       type: string
  *       400:
- *         description: Email atau password salah
+ *         description: Email or password is not correct
  */
 authRoutes.post("/login", validate(loginSchema), login);
