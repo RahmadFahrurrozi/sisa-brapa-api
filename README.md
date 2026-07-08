@@ -4,7 +4,7 @@ Dokumen ini berisi panduan langkah demi langkah untuk meng-clone dan menjalankan
 
 ---
 
-## 🛠️ Prasyarat (Prerequisites)
+## Prasyarat (Prerequisites)
 
 Sebelum memulai, pastikan PC/Laptop baru Anda sudah menginstal tiga tools utama berikut:
 
@@ -18,7 +18,7 @@ Sebelum memulai, pastikan PC/Laptop baru Anda sudah menginstal tiga tools utama 
 
 ---
 
-## 🚀 Langkah-Langkah Menjalankan Project
+## Langkah-Langkah Menjalankan Project
 
 Ikuti langkah-langkah di bawah ini secara berurutan di terminal (Git Bash, Command Prompt, atau PowerShell):
 
@@ -90,7 +90,7 @@ Server Anda sekarang aktif dan berjalan di `http://localhost:3000`.
 
 ---
 
-## 🔄 Mekanisme Alur Kerja (Laptop ⇄ PC)
+## Mekanisme Alur Kerja (Laptop ⇄ PC)
 
 * **Kode Program (Sinkronisasi via GitHub):**
   * Di **Laptop**: Edit kode ➔ `git add` ➔ `git commit` ➔ `git push` ke GitHub.
