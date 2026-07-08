@@ -13,7 +13,7 @@ import {
   deleteExpense,
   getExpenseSummary,
 } from "../controllers/expense.controller";
-import { getExpenseAnalytics } from "../controllers/analytics.controller";
+import { getExpenseAnalytics, getExpenseComparison } from "../controllers/analytics.controller";
 import { exportToExcel, exportToPdf } from "../controllers/export.controller";
 
 export const expenseRoutes = Router();
@@ -143,6 +143,35 @@ expenseRoutes.get("/summary", getExpenseSummary);
  *         description: Token tidak valid atau tidak ditemukan
  */
 expenseRoutes.get("/analytics", getExpenseAnalytics);
+
+/**
+ * @swagger
+ * /expenses/comparison:
+ *   get:
+ *     summary: Ambil perbandingan tren pengeluaran bulan ini vs bulan lalu (s.d tanggal saat ini)
+ *     tags: [Expenses]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Perbandingan berhasil dihitung
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 200
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *       401:
+ *         description: Token tidak valid atau tidak ditemukan
+ */
+expenseRoutes.get("/comparison", getExpenseComparison);
+
 
 /**
  * @swagger

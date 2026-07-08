@@ -123,3 +123,98 @@ export const getBudgetStatus = async (
     next(error);
   }
 };
+
+// GET /api/budgets/alerts
+export const getBudgetAlerts = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = req.user!.id;
+    const now = new Date();
+    const currentMonth = now.getMonth() + 1;
+    const currentYear = now.getFullYear();
+
+    // 1. Ambil semua budget user untuk bulan & tahun ini
+    const budgets = await prisma.budget.findMany({
+      where: {
+        userId,
+        month: currentMonth,
+        year: currentYear,
+      },
+    });
+
+    if (budgets.length === 0) {
+      res.json({
+        status: 200,
+        message: "Tidak ada anggaran yang dikonfigurasi bulan ini",
+        data: [],
+      });
+      return;
+    }
+
+    // Rentang tanggal untuk menghitung pengeluaran
+    const startDate = new Date(currentYear, currentMonth - 1, 1);
+    const endDate = new Date(currentYear, currentMonth, 1);
+
+    // 2. Ambil data pengeluaran bulan ini
+    const expenses = await prisma.expense.findMany({
+      where: {
+        userId,
+        date: {
+          gte: startDate,
+          lt: endDate,
+        },
+      },
+    });
+
+    // 3. Filter budget yang mencapai batas >= 80%
+    const alerts = budgets
+      .map((budget) => {
+        let spent = 0;
+        if (budget.category === "all") {
+          spent = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+        } else {
+          spent = expenses
+            .filter((exp) => exp.category === budget.category)
+            .reduce((sum, exp) => sum + exp.amount, 0);
+        }
+
+        const remaining = budget.amount - spent;
+        const percentage = budget.amount > 0 ? Number(((spent / budget.amount) * 100).toFixed(2)) : 0;
+
+        let level: "warning" | "danger" | null = null;
+        let message = "";
+
+        if (percentage >= 100) {
+          level = "danger";
+          message = `Anggaran untuk kategori '${budget.category}' telah habis! Anda sudah melebihi batas anggaran bulanan (${percentage}% terpakai).`;
+        } else if (percentage >= 80) {
+          level = "warning";
+          message = `Pengeluaran untuk kategori '${budget.category}' hampir habis! Anda sudah menggunakan ${percentage}% dari total anggaran.`;
+        }
+
+        return {
+          id: budget.id,
+          category: budget.category,
+          amount: budget.amount,
+          spent,
+          remaining,
+          percentage,
+          level,
+          message,
+        };
+      })
+      .filter((alert) => alert.level !== null); // Hanya ambil yang level-nya warning atau danger
+
+    res.json({
+      status: 200,
+      message: "Data budget alerts berhasil diambil",
+      data: alerts,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { authMiddleware } from "../middlewares/auth.middleware";
-import { setBudget, getBudgetStatus } from "../controllers/budget.controller";
+import { setBudget, getBudgetStatus, getBudgetAlerts } from "../controllers/budget.controller";
 
 export const budgetRoutes = Router();
 
@@ -81,3 +81,34 @@ budgetRoutes.post("/", setBudget);
  *         description: Token tidak valid atau tidak ditemukan
  */
 budgetRoutes.get("/status", getBudgetStatus);
+
+/**
+ * @swagger
+ * /budgets/alerts:
+ *   get:
+ *     summary: Ambil peringatan sisa budget bulanan yang hampir habis (>= 80%) atau habis (>= 100%)
+ *     tags: [Budgets]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Data budget alerts berhasil diambil
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 200
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *       401:
+ *         description: Token tidak valid atau tidak ditemukan
+ */
+budgetRoutes.get("/alerts", getBudgetAlerts);
+

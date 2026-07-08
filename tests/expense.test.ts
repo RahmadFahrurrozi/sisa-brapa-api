@@ -232,6 +232,26 @@ describe("Expense and Budget Integration Tests", () => {
     });
   });
 
+  describe("GET /api/expenses/comparison - Monthly Expense Comparison", () => {
+    it("should calculate comparison statistics successfully", async () => {
+      // Tambah expense untuk bulan ini
+      await request(app)
+        .post("/api/expenses")
+        .set("Authorization", `Bearer ${token}`)
+        .send({ title: "Makan Siang", amount: 20000, category: "food" });
+
+      const response = await request(app)
+        .get("/api/expenses/comparison")
+        .set("Authorization", `Bearer ${token}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body.data.currentPeriod).toBeDefined();
+      expect(response.body.data.previousPeriod).toBeDefined();
+      expect(response.body.data.differencePercentage).toBeDefined();
+      expect(response.body.data.status).toBeDefined();
+    });
+  });
+
   describe("POST /api/budgets & GET /api/budgets/status - Budgeting Feature", () => {
     it("should configure a budget limit", async () => {
       const response = await request(app)
@@ -278,6 +298,69 @@ describe("Expense and Budget Integration Tests", () => {
       expect(response.body.data[0].spent).toBe(20000);
       expect(response.body.data[0].remaining).toBe(80000);
       expect(response.body.data[0].percentage).toBe(20);
+    });
+  });
+
+  describe("GET /api/budgets/alerts - Budget Alerts", () => {
+    it("should return alerts when budget spending reaches 80%", async () => {
+      const currentMonth = new Date().getMonth() + 1;
+      const currentYear = new Date().getFullYear();
+
+      // 1. Set budget yang kecil agar mudah terlewati (misal limit 25,000)
+      await request(app)
+        .post("/api/budgets")
+        .set("Authorization", `Bearer ${token}`)
+        .send({
+          amount: 25000,
+          category: "food",
+          month: currentMonth,
+          year: currentYear,
+        });
+
+      // 2. Tambahkan pengeluaran yang melebihi 80% (misal 20,000 dari limit 25,000 = 80%)
+      await request(app)
+        .post("/api/expenses")
+        .set("Authorization", `Bearer ${token}`)
+        .send({ title: "Makan Bakso", amount: 20000, category: "food" });
+
+      const response = await request(app)
+        .get("/api/budgets/alerts")
+        .set("Authorization", `Bearer ${token}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body.data).toBeInstanceOf(Array);
+      expect(response.body.data.length).toBeGreaterThan(0);
+      expect(response.body.data[0].category).toBe("food");
+      expect(response.body.data[0].level).toBe("warning");
+    });
+
+    it("should return alert danger when budget spending reaches 100%", async () => {
+      const currentMonth = new Date().getMonth() + 1;
+      const currentYear = new Date().getFullYear();
+
+      // 1. Set budget 25,000
+      await request(app)
+        .post("/api/budgets")
+        .set("Authorization", `Bearer ${token}`)
+        .send({
+          amount: 25000,
+          category: "food",
+          month: currentMonth,
+          year: currentYear,
+        });
+
+      // 2. Tambahkan pengeluaran 30,000 (melebihi limit 25,000)
+      await request(app)
+        .post("/api/expenses")
+        .set("Authorization", `Bearer ${token}`)
+        .send({ title: "Makan Mewah", amount: 30000, category: "food" });
+
+      const response = await request(app)
+        .get("/api/budgets/alerts")
+        .set("Authorization", `Bearer ${token}`);
+
+      expect(response.status).toBe(200);
+      expect(response.body.data[0].level).toBe("danger");
     });
   });
 

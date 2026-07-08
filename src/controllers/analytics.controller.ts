@@ -159,3 +159,103 @@ export const getExpenseAnalytics = async (
     next(error);
   }
 };
+
+// GET /api/analytics/comparison
+export const getExpenseComparison = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = req.user!.id;
+    const now = new Date();
+
+    // 1. Definisikan rentang waktu Bulan Ini (s.d saat ini/detik ini)
+    const startOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    startOfCurrentMonth.setHours(0, 0, 0, 0);
+    const endOfCurrentPeriod = new Date(now);
+
+    // 2. Definisikan rentang waktu Bulan Lalu (s.d tanggal & jam yang sama)
+    const startOfPreviousMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    startOfPreviousMonth.setHours(0, 0, 0, 0);
+
+    // Cari hari maksimal di bulan lalu untuk mencegah bug overflow (contoh: 31 Juli -> 30 Juni)
+    const daysInPreviousMonth = new Date(now.getFullYear(), now.getMonth(), 0).getDate();
+    const targetDay = Math.min(now.getDate(), daysInPreviousMonth);
+
+    const endOfPreviousPeriod = new Date(
+      now.getFullYear(),
+      now.getMonth() - 1,
+      targetDay,
+      now.getHours(),
+      now.getMinutes(),
+      now.getSeconds(),
+      now.getMilliseconds()
+    );
+
+    // 3. Query total pengeluaran bulan ini (s.d saat ini)
+    const currentAggregate = await prisma.expense.aggregate({
+      where: {
+        userId,
+        date: {
+          gte: startOfCurrentMonth,
+          lte: endOfCurrentPeriod,
+        },
+      },
+      _sum: { amount: true },
+    });
+    const currentTotal = currentAggregate._sum.amount || 0;
+
+    // 4. Query total pengeluaran bulan lalu (s.d saat ini)
+    const previousAggregate = await prisma.expense.aggregate({
+      where: {
+        userId,
+        date: {
+          gte: startOfPreviousMonth,
+          lte: endOfPreviousPeriod,
+        },
+      },
+      _sum: { amount: true },
+    });
+    const previousTotal = previousAggregate._sum.amount || 0;
+
+    // 5. Hitung perbandingan persentase
+    let differencePercentage = 0;
+    if (previousTotal > 0) {
+      differencePercentage = Number(
+        (((currentTotal - previousTotal) / previousTotal) * 100).toFixed(2)
+      );
+    } else if (currentTotal > 0) {
+      differencePercentage = 100.0;
+    }
+
+    let comparisonStatus = "equal";
+    if (differencePercentage < 0) {
+      comparisonStatus = "saving";
+    } else if (differencePercentage > 0) {
+      comparisonStatus = "wasting";
+    }
+
+    res.json({
+      status: 200,
+      message: "Data perbandingan pengeluaran berhasil dihitung",
+      data: {
+        currentPeriod: {
+          start: startOfCurrentMonth.toISOString(),
+          end: endOfCurrentPeriod.toISOString(),
+          total: currentTotal,
+        },
+        previousPeriod: {
+          start: startOfPreviousMonth.toISOString(),
+          end: endOfPreviousPeriod.toISOString(),
+          total: previousTotal,
+        },
+        differencePercentage,
+        status: comparisonStatus,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
