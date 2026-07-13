@@ -26,6 +26,8 @@ model User {
   expenses Expense[]
   // Relasi ke Budget
   budgets  Budget[]
+  // Relasi ke Subscription
+  subscriptions Subscription[]
 }
 
 model Expense {
@@ -55,4 +57,18 @@ model Budget {
   updatedAt DateTime @updatedAt
 
   @@unique([userId, category, month, year]) // Satu user hanya boleh punya satu budget per kategori/bulan
+}
+
+model Subscription {
+  id           String   @id @default(cuid())
+  name         String // nama layanan/tagihan contoh: netflix, spotify, gemini
+  amount       Float // nominal tagihan
+  billingCycle String // siklus pembayaran: "monthly", "yearly", "weakly"
+  nextBillingDate DateTime
+  status       String //default "active" jika sudah dibayar, "pending" jika belum dibayar, "cancelled" jika dibatalkan, "expired" jika sudah lewat tanggal jatuh tempo
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
