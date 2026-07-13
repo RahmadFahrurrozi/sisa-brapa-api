@@ -11,7 +11,7 @@ export const analyticsQuerySchema = z.object({
 export const getExpenseAnalytics = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const userId = req.user!.id;
@@ -111,7 +111,7 @@ export const getExpenseAnalytics = async (
     // Tentukan pengelompokan tren (harian / bulanan)
     const diffMs = end.getTime() - start.getTime();
     const diffDays = diffMs / (1000 * 60 * 60 * 24);
-    
+
     let groupFormat: "hour" | "day" | "month";
     if (range === "today") {
       groupFormat = "hour";
@@ -164,7 +164,7 @@ export const getExpenseAnalytics = async (
 export const getExpenseComparison = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const userId = req.user!.id;
@@ -190,7 +190,7 @@ export const getExpenseComparison = async (
       now.getHours(),
       now.getMinutes(),
       now.getSeconds(),
-      now.getMilliseconds()
+      now.getMilliseconds(),
     );
 
     // 3. Query total pengeluaran bulan ini (s.d saat ini)
@@ -223,7 +223,7 @@ export const getExpenseComparison = async (
     let differencePercentage = 0;
     if (previousTotal > 0) {
       differencePercentage = Number(
-        (((currentTotal - previousTotal) / previousTotal) * 100).toFixed(2)
+        (((currentTotal - previousTotal) / previousTotal) * 100).toFixed(2),
       );
     } else if (currentTotal > 0) {
       differencePercentage = 100.0;
@@ -258,4 +258,3 @@ export const getExpenseComparison = async (
     next(error);
   }
 };
-

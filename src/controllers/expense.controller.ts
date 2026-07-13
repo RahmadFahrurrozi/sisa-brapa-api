@@ -8,7 +8,7 @@ import { Prisma } from "../generated/prisma";
 export const getAllExpenses = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const userId = req.user!.id;
@@ -74,7 +74,7 @@ export const getAllExpenses = async (
 export const getExpenseById = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const userId = req.user!.id;
@@ -99,7 +99,7 @@ export const getExpenseById = async (
 export const createExpense = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const userId = req.user!.id;
@@ -140,7 +140,7 @@ export const createExpense = async (
 export const updateExpense = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const userId = req.user!.id;
@@ -192,7 +192,7 @@ export const updateExpense = async (
 export const deleteExpense = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const userId = req.user!.id;
@@ -232,7 +232,7 @@ export const deleteExpense = async (
 export const getExpenseSummary = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const userId = req.user!.id;
@@ -280,7 +280,7 @@ export const getExpenseSummary = async (
         };
         return acc;
       },
-      {}
+      {},
     );
 
     const grandTotal = grouped.reduce((sum: number, item) => sum + (item._sum.amount || 0), 0);
@@ -292,7 +292,7 @@ export const getExpenseSummary = async (
         period: { month: targetMonth, year: targetYear },
         summary,
         grandTotal,
-      }
+      },
     };
 
     // Simpan ke cache selama 5 menit (300 detik)

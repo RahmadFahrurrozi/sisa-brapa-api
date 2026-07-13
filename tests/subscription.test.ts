@@ -32,9 +32,7 @@ describe("Subscription Tracker Integration Tests", () => {
           name: "Netflix",
           amount: 186000,
           billingCycle: "monthly",
-          nextBillingDate: new Date(
-            Date.now() + 30 * 24 * 60 * 60 * 1000,
-          ).toISOString(),
+          nextBillingDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
           note: "Paket Premium 4K",
         });
 
@@ -76,15 +74,12 @@ describe("Subscription Tracker Integration Tests", () => {
 
   describe("GET /api/subscriptions - Get Subscriptions", () => {
     it("should get active subscriptions for user", async () => {
-      await request(app)
-        .post("/api/subscriptions")
-        .set("Authorization", `Bearer ${token}`)
-        .send({
-          name: "Spotify",
-          amount: 54900,
-          billingCycle: "monthly",
-          nextBillingDate: new Date().toISOString(),
-        });
+      await request(app).post("/api/subscriptions").set("Authorization", `Bearer ${token}`).send({
+        name: "Spotify",
+        amount: 54900,
+        billingCycle: "monthly",
+        nextBillingDate: new Date().toISOString(),
+      });
 
       const response = await request(app)
         .get("/api/subscriptions")

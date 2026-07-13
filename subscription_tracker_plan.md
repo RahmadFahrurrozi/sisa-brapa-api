@@ -29,6 +29,7 @@ Berikut adalah langkah-langkah detail untuk menyelesaikan **Task 2: API Subscrip
 ## 🛠️ Detail Teknis & Desain Kode
 
 ### 1. Skema Database (Prisma)
+
 Kita akan menambahkan model `Subscription` dengan relasi cascade ke `User`:
 
 ```prisma
@@ -51,17 +52,18 @@ model Subscription {
 
 Semua endpoint ini memerlukan header `Authorization: Bearer <TOKEN>`:
 
-| Method | Endpoint | Deskripsi | Input Body / Params |
-| :--- | :--- | :--- | :--- |
-| **POST** | `/api/subscriptions` | Membuat subscription baru | `{ name, amount, billingCycle, nextBillingDate, note? }` |
-| **GET** | `/api/subscriptions` | Mengambil semua subscription aktif milik user | - |
-| **DELETE** | `/api/subscriptions/:id` | Menghapus/membatalkan subscription berdasarkan ID | `params: { id }` |
+| Method     | Endpoint                 | Deskripsi                                         | Input Body / Params                                      |
+| :--------- | :----------------------- | :------------------------------------------------ | :------------------------------------------------------- |
+| **POST**   | `/api/subscriptions`     | Membuat subscription baru                         | `{ name, amount, billingCycle, nextBillingDate, note? }` |
+| **GET**    | `/api/subscriptions`     | Mengambil semua subscription aktif milik user     | -                                                        |
+| **DELETE** | `/api/subscriptions/:id` | Menghapus/membatalkan subscription berdasarkan ID | `params: { id }`                                         |
 
 ---
 
 ## 🚀 Perintah yang Akan Dijalankan
 
 Setelah skema didefinisikan, kita perlu menjalankan:
+
 ```bash
 # Migrasi skema database
 npx prisma migrate dev --name add_subscription_model

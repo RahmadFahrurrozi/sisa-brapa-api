@@ -1,27 +1,18 @@
 import { z } from "zod";
 
 export const CATEGORIES = ["food", "transport", "entertainment", "health", "other"] as const;
-export type ExpenseCategory = typeof CATEGORIES[number];
+export type ExpenseCategory = (typeof CATEGORIES)[number];
 
 export const createExpenseSchema = z.object({
-  title: z
-    .string()
-    .min(1, "Title cannot be empty")
-    .max(100, "Title max 100 char"),
+  title: z.string().min(1, "Title cannot be empty").max(100, "Title max 100 char"),
 
-  amount: z
-    .number()
-    .positive("Amount must be more than 0")
-    .max(999_999_999, "Amount too big"),
+  amount: z.number().positive("Amount must be more than 0").max(999_999_999, "Amount too big"),
 
   category: z.enum(CATEGORIES, {
     message: "Category invalid",
   }),
 
-  date: z
-    .string()
-    .datetime({ message: "Format date invalid" })
-    .optional(),
+  date: z.string().datetime({ message: "Format date invalid" }).optional(),
 
   note: z.string().max(500).optional(),
 });

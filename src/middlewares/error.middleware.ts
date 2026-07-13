@@ -7,7 +7,6 @@ export const errorHandler = (
   err: Error,
   req: Request,
   res: Response,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _next: NextFunction, // Wajib ada meski tidak dipakai (Express butuh signature ini)
 ): void => {
   console.error(`[ERROR] ${req.method} ${req.url}:`, err.message);

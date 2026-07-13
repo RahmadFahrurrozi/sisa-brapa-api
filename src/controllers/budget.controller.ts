@@ -12,11 +12,7 @@ const budgetSchema = z.object({
   year: z.number().int().min(2000).max(2100),
 });
 
-export const setBudget = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
+export const setBudget = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const userId = req.user!.id;
     const body = budgetSchema.parse(req.body);
@@ -55,7 +51,7 @@ export const setBudget = async (
 export const getBudgetStatus = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const userId = req.user!.id;
@@ -128,7 +124,7 @@ export const getBudgetStatus = async (
 export const getBudgetAlerts = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const userId = req.user!.id;
@@ -182,7 +178,8 @@ export const getBudgetAlerts = async (
         }
 
         const remaining = budget.amount - spent;
-        const percentage = budget.amount > 0 ? Number(((spent / budget.amount) * 100).toFixed(2)) : 0;
+        const percentage =
+          budget.amount > 0 ? Number(((spent / budget.amount) * 100).toFixed(2)) : 0;
 
         let level: "warning" | "danger" | null = null;
         let message = "";
@@ -217,4 +214,3 @@ export const getBudgetAlerts = async (
     next(error);
   }
 };
-

@@ -43,8 +43,6 @@ const swaggerOptions = {
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-
-
 // ── Routes ───────────────────────────────────────────────
 app.use("/api/auth", authRoutes);
 app.use("/api/expenses", expenseRoutes);
@@ -61,7 +59,7 @@ app.get("/", (_req, res) => {
   res.json({
     message: "Welcome to Expense Tracker API",
     docs: "/docs",
-    health: "/health"
+    health: "/health",
   });
 });
 
