@@ -111,4 +111,3 @@ budgetRoutes.get("/status", getBudgetStatus);
  *         description: Token tidak valid atau tidak ditemukan
  */
 budgetRoutes.get("/alerts", getBudgetAlerts);
-

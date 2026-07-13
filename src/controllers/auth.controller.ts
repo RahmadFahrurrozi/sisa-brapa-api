@@ -36,18 +36,14 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   // Cek user terdaftar
   const user = await prisma.user.findUnique({ where: { email } });
   if (!user) {
-    res
-      .status(400)
-      .json({ status: 400, message: "Email or password is not correct" });
+    res.status(400).json({ status: 400, message: "Email or password is not correct" });
     return;
   }
 
   // Cek password
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) {
-    res
-      .status(400)
-      .json({ status: 400, message: "Email or password is not correct" });
+    res.status(400).json({ status: 400, message: "Email or password is not correct" });
     return;
   }
 

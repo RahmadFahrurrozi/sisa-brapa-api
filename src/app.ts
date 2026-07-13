@@ -6,6 +6,7 @@ import swaggerJsdoc from "swagger-jsdoc";
 import { authRoutes } from "./routes/auth.routes";
 import { expenseRoutes } from "./routes/expense.routes";
 import { budgetRoutes } from "./routes/budget.routes";
+import { subscriptionRoutes } from "./routes/subscription.routes";
 import { errorHandler } from "./middlewares/error.middleware";
 
 dotenv.config();
@@ -42,12 +43,11 @@ const swaggerOptions = {
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-
-
 // ── Routes ───────────────────────────────────────────────
 app.use("/api/auth", authRoutes);
 app.use("/api/expenses", expenseRoutes);
 app.use("/api/budgets", budgetRoutes);
+app.use("/api/subscriptions", subscriptionRoutes);
 
 // Health check
 app.get("/health", (_req, res) => {
@@ -59,7 +59,7 @@ app.get("/", (_req, res) => {
   res.json({
     message: "Welcome to Expense Tracker API",
     docs: "/docs",
-    health: "/health"
+    health: "/health",
   });
 });
 

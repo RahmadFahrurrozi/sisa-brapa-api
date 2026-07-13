@@ -4,7 +4,12 @@ import * as XLSX from "xlsx";
 import PDFDocument from "pdfkit";
 
 // Helper untuk menyaring expense berdasarkan bulan, tahun, kategori
-const getFilteredExpenses = async (userId: string, month?: number, year?: number, category?: string) => {
+const getFilteredExpenses = async (
+  userId: string,
+  month?: number,
+  year?: number,
+  category?: string,
+) => {
   const where: any = { userId };
 
   if (category) {
@@ -29,7 +34,7 @@ const getFilteredExpenses = async (userId: string, month?: number, year?: number
 export const exportToExcel = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const userId = req.user!.id;
@@ -42,11 +47,11 @@ export const exportToExcel = async (
     // Format data untuk Excel
     const data = expenses.map((exp) => ({
       "ID Pengeluaran": exp.id,
-      "Judul": exp.title,
+      Judul: exp.title,
       "Jumlah (Rp)": exp.amount,
-      "Kategori": exp.category,
-      "Tanggal": exp.date.toISOString().split("T")[0],
-      "Catatan": exp.note || "-",
+      Kategori: exp.category,
+      Tanggal: exp.date.toISOString().split("T")[0],
+      Catatan: exp.note || "-",
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(data);
@@ -58,11 +63,11 @@ export const exportToExcel = async (
 
     res.setHeader(
       "Content-Type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     );
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename="laporan-pengeluaran-${Date.now()}.xlsx"`
+      `attachment; filename="laporan-pengeluaran-${Date.now()}.xlsx"`,
     );
     res.send(buffer);
   } catch (error) {
@@ -73,7 +78,7 @@ export const exportToExcel = async (
 export const exportToPdf = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const userId = req.user!.id;
@@ -88,7 +93,7 @@ export const exportToPdf = async (
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename="laporan-pengeluaran-${Date.now()}.pdf"`
+      `attachment; filename="laporan-pengeluaran-${Date.now()}.pdf"`,
     );
 
     doc.pipe(res);
@@ -113,7 +118,7 @@ export const exportToPdf = async (
     doc.text("Kategori", 140, tableTop, { width: 100 });
     doc.text("Judul", 250, tableTop, { width: 180 });
     doc.text("Jumlah", 440, tableTop, { width: 120, align: "right" });
-    
+
     doc.moveDown(0.5);
     doc.strokeColor("#e5e7eb").lineWidth(1).moveTo(50, doc.y).lineTo(560, doc.y).stroke();
     doc.moveDown(0.5);
@@ -141,7 +146,10 @@ export const exportToPdf = async (
       doc.text(exp.date.toISOString().split("T")[0], 50, currentY, { width: 80 });
       doc.text(exp.category, 140, currentY, { width: 100 });
       doc.text(exp.title, 250, currentY, { width: 180 });
-      doc.text(`Rp ${exp.amount.toLocaleString("id-ID")}`, 440, currentY, { width: 120, align: "right" });
+      doc.text(`Rp ${exp.amount.toLocaleString("id-ID")}`, 440, currentY, {
+        width: 120,
+        align: "right",
+      });
       doc.moveDown(1.2);
     });
 

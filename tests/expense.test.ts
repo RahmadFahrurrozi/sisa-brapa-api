@@ -8,21 +8,17 @@ describe("Expense and Budget Integration Tests", () => {
   // Daftar dan login untuk mendapatkan JWT Token sebelum setiap pengujian
   beforeEach(async () => {
     const email = `testuser-${Date.now()}@example.com`;
-    
-    await request(app)
-      .post("/api/auth/register")
-      .send({
-        name: "Test User",
-        email,
-        password: "password123",
-      });
 
-    const loginRes = await request(app)
-      .post("/api/auth/login")
-      .send({
-        email,
-        password: "password123",
-      });
+    await request(app).post("/api/auth/register").send({
+      name: "Test User",
+      email,
+      password: "password123",
+    });
+
+    const loginRes = await request(app).post("/api/auth/login").send({
+      email,
+      password: "password123",
+    });
 
     token = loginRes.body.token;
   });
@@ -224,7 +220,9 @@ describe("Expense and Budget Integration Tests", () => {
       const localDateStr = `${year}-${month}-${date}`;
 
       const response = await request(app)
-        .get(`/api/expenses/analytics?range=custom&startDate=${localDateStr}&endDate=${localDateStr}`)
+        .get(
+          `/api/expenses/analytics?range=custom&startDate=${localDateStr}&endDate=${localDateStr}`,
+        )
         .set("Authorization", `Bearer ${token}`);
 
       expect(response.status).toBe(200);
@@ -272,15 +270,12 @@ describe("Expense and Budget Integration Tests", () => {
       // Setel budget
       const currentMonth = new Date().getMonth() + 1;
       const currentYear = new Date().getFullYear();
-      await request(app)
-        .post("/api/budgets")
-        .set("Authorization", `Bearer ${token}`)
-        .send({
-          amount: 100000,
-          category: "food",
-          month: currentMonth,
-          year: currentYear,
-        });
+      await request(app).post("/api/budgets").set("Authorization", `Bearer ${token}`).send({
+        amount: 100000,
+        category: "food",
+        month: currentMonth,
+        year: currentYear,
+      });
 
       // Tambahkan pengeluaran
       await request(app)
@@ -307,15 +302,12 @@ describe("Expense and Budget Integration Tests", () => {
       const currentYear = new Date().getFullYear();
 
       // 1. Set budget yang kecil agar mudah terlewati (misal limit 25,000)
-      await request(app)
-        .post("/api/budgets")
-        .set("Authorization", `Bearer ${token}`)
-        .send({
-          amount: 25000,
-          category: "food",
-          month: currentMonth,
-          year: currentYear,
-        });
+      await request(app).post("/api/budgets").set("Authorization", `Bearer ${token}`).send({
+        amount: 25000,
+        category: "food",
+        month: currentMonth,
+        year: currentYear,
+      });
 
       // 2. Tambahkan pengeluaran yang melebihi 80% (misal 20,000 dari limit 25,000 = 80%)
       await request(app)
@@ -339,15 +331,12 @@ describe("Expense and Budget Integration Tests", () => {
       const currentYear = new Date().getFullYear();
 
       // 1. Set budget 25,000
-      await request(app)
-        .post("/api/budgets")
-        .set("Authorization", `Bearer ${token}`)
-        .send({
-          amount: 25000,
-          category: "food",
-          month: currentMonth,
-          year: currentYear,
-        });
+      await request(app).post("/api/budgets").set("Authorization", `Bearer ${token}`).send({
+        amount: 25000,
+        category: "food",
+        month: currentMonth,
+        year: currentYear,
+      });
 
       // 2. Tambahkan pengeluaran 30,000 (melebihi limit 25,000)
       await request(app)

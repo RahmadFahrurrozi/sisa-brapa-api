@@ -1,10 +1,7 @@
 import { Router } from "express";
 import { authMiddleware } from "../middlewares/auth.middleware";
 import { validate } from "../middlewares/validate.middleware";
-import {
-  createExpenseSchema,
-  updateExpenseSchema,
-} from "../schemas/expense.schema";
+import { createExpenseSchema, updateExpenseSchema } from "../schemas/expense.schema";
 import {
   getAllExpenses,
   getExpenseById,
@@ -171,7 +168,6 @@ expenseRoutes.get("/analytics", getExpenseAnalytics);
  *         description: Token tidak valid atau tidak ditemukan
  */
 expenseRoutes.get("/comparison", getExpenseComparison);
-
 
 /**
  * @swagger
