@@ -8,6 +8,7 @@ import { expenseRoutes } from "./routes/expense.routes";
 import { budgetRoutes } from "./routes/budget.routes";
 import { subscriptionRoutes } from "./routes/subscription.routes";
 import { errorHandler } from "./middlewares/error.middleware";
+import { goalRoutes } from "./routes/goal.routes";
 
 dotenv.config();
 
@@ -48,6 +49,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/expenses", expenseRoutes);
 app.use("/api/budgets", budgetRoutes);
 app.use("/api/subscriptions", subscriptionRoutes);
+app.use("/api/goals", goalRoutes);
 
 // Health check
 app.get("/health", (_req, res) => {
