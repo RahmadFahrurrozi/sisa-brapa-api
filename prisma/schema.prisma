@@ -23,33 +23,37 @@ model User {
   updatedAt DateTime @updatedAt
 
   // Relasi ke Expense
-  expenses Expense[]
+  expenses      Expense[]
   // Relasi ke Budget
-  budgets  Budget[]
+  budgets       Budget[]
   // Relasi ke Subscription
   subscriptions Subscription[]
+  // relasi ke goals
+  goals         Goal[]
+  // relasi ke savinglogs
+  savingLogs    SavingLog[]
 }
 
 model Expense {
-  id        String    @id @default(cuid())
+  id        String   @id @default(cuid())
   title     String
   amount    Float
-  category  String    // "food", "transport", dll
-  date      DateTime  @default(now())
-  note      String?   // Tanda ? = optional (boleh null)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  category  String // "food", "transport", dll
+  date      DateTime @default(now())
+  note      String? // Tanda ? = optional (boleh null)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Foreign key ke User
-  userId    String
-  user      User      @relation(fields: [userId], references: [id])
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 }
 
 model Budget {
   id        String   @id @default(cuid())
   amount    Float
-  category  String   // "all" untuk seluruh pengeluaran, atau kategori spesifik seperti "food", "transport"
-  month     Int      // 1-12
+  category  String // "all" untuk seluruh pengeluaran, atau kategori spesifik seperti "food", "transport"
+  month     Int // 1-12
   year      Int
   userId    String
   user      User     @relation(fields: [userId], references: [id])
@@ -60,15 +64,41 @@ model Budget {
 }
 
 model Subscription {
-  id           String   @id @default(cuid())
-  name         String // nama layanan/tagihan contoh: netflix, spotify, gemini
-  amount       Float // nominal tagihan
-  billingCycle String // siklus pembayaran: "monthly", "yearly", "weakly"
+  id              String   @id @default(cuid())
+  name            String // nama layanan/tagihan contoh: netflix, spotify, gemini
+  amount          Float // nominal tagihan
+  billingCycle    String // siklus pembayaran: "monthly", "yearly", "weakly"
   nextBillingDate DateTime
-  status       String //default "active" jika sudah dibayar, "pending" jika belum dibayar, "cancelled" jika dibatalkan, "expired" jika sudah lewat tanggal jatuh tempo
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  status          String //default "active" jika sudah dibayar, "pending" jika belum dibayar, "cancelled" jika dibatalkan, "expired" jika sudah lewat tanggal jatuh tempo
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  userId        String
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Goal {
+  id            String    @id @default(cuid())
+  name          String //example: "Dana Darurat, pengen beli laptop baru"
+  targetAmount  Float //jumlah target tabungan
+  currentAmount Float //akumulasi saat ini
+  deadline      DateTime? //tenggat waktu opsional
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  userId  String
+  user    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  savings SavingLog[]
+}
+
+model SavingLog {
+  id        String   @id @default(cuid())
+  amount    Float //jumlah nominal setoran nabung
+  date      DateTime @default(now()) //tanggal setor
+  note      String?
+  createdAt DateTime @default(now())
+  goalId    String
+  goal      Goal     @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
