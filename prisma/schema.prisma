@@ -22,6 +22,8 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  refreshToken  String?
+
   // Relasi ke Expense
   expenses      Expense[]
   // Relasi ke Budget
@@ -47,6 +49,8 @@ model Expense {
   // Foreign key ke User
   userId String
   user   User   @relation(fields: [userId], references: [id])
+  @@index([userId, category])
+  @@index([userId, date])
 }
 
 model Budget {
@@ -75,6 +79,7 @@ model Subscription {
 
   userId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, status])
 }
 
 model Goal {
@@ -89,6 +94,7 @@ model Goal {
   userId  String
   user    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   savings SavingLog[]
+  @@index([userId])
 }
 
 model SavingLog {
@@ -101,4 +107,6 @@ model SavingLog {
   goal      Goal     @relation(fields: [goalId], references: [id], onDelete: Cascade)
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId, date])
+  @@index([goalId])
 }

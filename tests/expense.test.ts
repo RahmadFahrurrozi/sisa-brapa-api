@@ -183,7 +183,12 @@ describe("Expense and Budget Integration Tests", () => {
       await request(app)
         .post("/api/expenses")
         .set("Authorization", `Bearer ${token}`)
-        .send({ title: "Makan Siang", amount: 20000, category: "food" });
+        .send({
+          title: "Makan Siang",
+          amount: 20000,
+          category: "food",
+          date: new Date().toISOString(),
+        });
 
       const response = await request(app)
         .get("/api/expenses/analytics?range=30d")

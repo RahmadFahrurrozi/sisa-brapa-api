@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { validate } from "../middlewares/validate.middleware";
 import { registerSchema, loginSchema } from "../schemas/auth.schema";
-import { register, login, logout } from "../controllers/auth.controller";
+import { register, login, logout, refresh } from "../controllers/auth.controller";
 import { authMiddleware } from "../middlewares/auth.middleware";
 
 export const authRoutes = Router();
@@ -122,6 +122,32 @@ authRoutes.post("/register", validate(registerSchema), register);
  *         description: Email or password is not correct
  */
 authRoutes.post("/login", validate(loginSchema), login);
+
+/**
+ * @swagger
+ * /auth/refresh:
+ *   post:
+ *     summary: Refresh access token menggunakan cookie refresh token HTTP-only
+ *     tags: [Auth]
+ *     responses:
+ *       200:
+ *         description: Berhasil mendapatkan access token baru
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: integer
+ *                   example: 200
+ *                 message:
+ *                   type: string
+ *                 token:
+ *                   type: string
+ *       401:
+ *         description: Token kadaluarsa, tidak valid, atau tidak ditemukan
+ */
+authRoutes.post("/refresh", refresh); // Endpoint ini tidak memakai authMiddleware!
 
 /**
  * @swagger

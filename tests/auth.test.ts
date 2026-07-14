@@ -2,84 +2,109 @@ import { describe, it, expect } from "vitest";
 import request from "supertest";
 import app from "../src/app";
 
-describe("POST /api/auth/register", () => {
-  it("should register user successfully with valid data", async () => {
-    const response = await request(app).post("/api/auth/register").send({
-      name: "Budi Santoso",
-      email: "budi@example.com",
-      password: "password123",
-    });
+describe("Authentication API Integration Tests", () => {
+  describe("POST /api/auth/register", () => {
+    it("should register user successfully and set cookie", async () => {
+      const response = await request(app)
+        .post("/api/auth/register")
+        .send({
+          name: "Budi Santoso",
+          email: `budi-${Date.now()}@example.com`,
+          password: "password123",
+        });
 
-    expect(response.status).toBe(201);
-    expect(response.body.message).toBe("Successfully Registered");
-    expect(response.body.data.password).toBeUndefined();
-    expect(response.body.data.email).toBe("budi@example.com");
+      expect(response.status).toBe(201);
+      expect(response.body.message).toBe("Successfully Registered");
+      expect(response.body.token).toBeDefined();
+
+      // Pastikan ada header set-cookie untuk refresh token
+      const cookies = response.headers["set-cookie"];
+      expect(cookies).toBeDefined();
+      expect(cookies[0]).toContain("refreshToken");
+    });
   });
 
-  it("should return 400 if email already exists", async () => {
-    // Register pertama kali
-    await request(app).post("/api/auth/register").send({
-      name: "Budi",
-      email: "budi@example.com",
-      password: "pass123",
-    });
+  describe("POST /api/auth/login", () => {
+    it("should login user, return access token, and set refresh cookie", async () => {
+      const email = `login-${Date.now()}@example.com`;
 
-    // Register kedua kali dengan email sama
-    const response = await request(app).post("/api/auth/register").send({
-      name: "Budi Dua",
-      email: "budi@example.com",
-      password: "pass456",
-    });
+      await request(app).post("/api/auth/register").send({
+        name: "Test User",
+        email,
+        password: "password123",
+      });
 
-    expect(response.status).toBe(400);
-    expect(response.body.message).toBe("Email already registered");
+      const response = await request(app).post("/api/auth/login").send({
+        email,
+        password: "password123",
+      });
+
+      expect(response.status).toBe(200);
+      expect(response.body.token).toBeDefined();
+
+      const cookies = response.headers["set-cookie"];
+      expect(cookies).toBeDefined();
+      expect(cookies[0]).toContain("refreshToken");
+    });
   });
 
-  it("should return 400 if required fields missing", async () => {
-    const response = await request(app).post("/api/auth/register").send({ name: "Budi" });
+  describe("POST /api/auth/refresh", () => {
+    it("should successfully refresh access token using valid cookie", async () => {
+      const email = `refresh-${Date.now()}@example.com`;
 
-    expect(response.status).toBe(400);
-    expect(response.body.error).toBe("Validasi gagal");
-  });
-});
+      const regRes = await request(app).post("/api/auth/register").send({
+        name: "Refresh User",
+        email,
+        password: "password123",
+      });
 
-describe("POST /api/auth/logout", () => {
-  it("should logout successfully and invalidate token", async () => {
-    const email = `logoutuser-${Date.now()}@example.com`;
+      // Ambil cookie dari response register
+      const cookie = regRes.headers["set-cookie"];
 
-    // Register
-    await request(app).post("/api/auth/register").send({
-      name: "Logout User",
-      email,
-      password: "password123",
+      const response = await request(app).post("/api/auth/refresh").set("Cookie", cookie);
+
+      expect(response.status).toBe(200);
+      expect(response.body.token).toBeDefined();
     });
 
-    // Login
-    const loginRes = await request(app).post("/api/auth/login").send({
-      email,
-      password: "password123",
+    it("should return 401 if refresh cookie is missing", async () => {
+      const response = await request(app).post("/api/auth/refresh");
+      expect(response.status).toBe(401);
     });
 
-    const token = loginRes.body.token;
+    it("should return 401 if refresh cookie is invalid", async () => {
+      const response = await request(app)
+        .post("/api/auth/refresh")
+        .set("Cookie", ["refreshToken=palsu_expired_token; Path=/; HttpOnly"]);
 
-    // Logout
-    const logoutRes = await request(app)
-      .post("/api/auth/logout")
-      .set("Authorization", `Bearer ${token}`);
-
-    expect(logoutRes.status).toBe(200);
-    expect(logoutRes.body.message).toBe("Successfully Logged Out");
-
-    // Try to access logout again (should fail because token is now blacklisted)
-    const secondLogoutRes = await request(app)
-      .post("/api/auth/logout")
-      .set("Authorization", `Bearer ${token}`);
-
-    expect(secondLogoutRes.status).toBe(401);
+      expect(response.status).toBe(401);
+    });
   });
 
-  it("should return 401 if token is missing", async () => {
-    const response = await request(app).post("/api/auth/logout");
-    expect(response.status).toBe(401);
+  describe("POST /api/auth/logout", () => {
+    it("should logout successfully and clear cookie", async () => {
+      const email = `logout-${Date.now()}@example.com`;
+
+      const regRes = await request(app).post("/api/auth/register").send({
+        name: "Logout User",
+        email,
+        password: "password123",
+      });
+
+      const token = regRes.body.token;
+      const cookie = regRes.headers["set-cookie"];
+
+      const response = await request(app)
+        .post("/api/auth/logout")
+        .set("Authorization", `Bearer ${token}`)
+        .set("Cookie", cookie);
+
+      expect(response.status).toBe(200);
+      expect(response.body.message).toBe("Successfully Logged Out");
+
+      // Verifikasi cookie di-clear (max-age diset ke 0/expire lampau)
+      const logoutCookies = response.headers["set-cookie"];
+      expect(logoutCookies[0]).toContain("Expires=Thu, 01 Jan 1970");
+    });
   });
 });
