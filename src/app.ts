@@ -20,9 +20,12 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-
 // ── 1. Global Security Middleware ─────────────────────────────
-app.use(helmet()); // Mengamankan header HTTP
+app.use(
+  helmet({
+    contentSecurityPolicy: false, // Dinonaktifkan agar file statis Swagger dari CDN/inline script tidak diblokir
+  }),
+); // Mengamankan header HTTP
 app.use(express.json());
 app.use(cookieParser()); // Memparsing cookie masuk
 app.use(cors());
@@ -76,7 +79,18 @@ const swaggerOptions = {
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
-app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+// Konfigurasi agar aset Swagger dimuat dari CDN cdnjs
+// Ini mencegah error "Unexpected token '<'" karena aset lokal tidak tersaji dengan benar di Vercel Serverless
+const swaggerUiOptions = {
+  customCssUrl: "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui.min.css",
+  customJs: [
+    "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-bundle.js",
+    "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.15.5/swagger-ui-standalone-preset.js",
+  ],
+};
+
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec, swaggerUiOptions));
 
 // ── Routes ──
 app.use("/api/auth", authRoutes);
