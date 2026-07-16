@@ -64,10 +64,8 @@ const swaggerOptions = {
       description: "REST API untuk mencatat pengeluaran pribadi",
     },
     servers: [
-      { url: `http://localhost:${PORT}/api`, description: "Development" },
-      ...(process.env.APP_URL
-        ? [{ url: `${process.env.APP_URL}/api`, description: "Production" }]
-        : []),
+      { url: "/api", description: "Default (Current Host)" },
+      { url: `http://localhost:${PORT}/api`, description: "Local Development" },
     ],
     components: {
       securitySchemes: {
