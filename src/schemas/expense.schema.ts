@@ -1,6 +1,20 @@
 import { z } from "zod";
 
-export const CATEGORIES = ["food", "transport", "entertainment", "health", "other"] as const;
+export const CATEGORIES = [
+  "food",
+  "transport",
+  "entertainment",
+  "health",
+  "education",
+  "bills",
+  "shopping",
+  "groceries",
+  "housing",
+  "internet",
+  "maintenance",
+  "personal_care",
+  "other",
+] as const;
 export type ExpenseCategory = (typeof CATEGORIES)[number];
 
 export const createExpenseSchema = z.object({
@@ -15,6 +29,8 @@ export const createExpenseSchema = z.object({
   date: z.string().datetime({ message: "Format date invalid" }).optional(),
 
   note: z.string().max(500).optional(),
+
+  walletId: z.string().optional(), // Opsional walletId untuk pencatatan dompet pengeluaran
 });
 
 // z.infer<> → ambil TypeScript type dari schema Zod secara otomatis

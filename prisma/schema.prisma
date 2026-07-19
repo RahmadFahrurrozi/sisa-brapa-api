@@ -26,6 +26,12 @@ model User {
 
   // Relasi ke Expense
   expenses      Expense[]
+  // Relasi ke Income
+  incomes       Income[]
+  // Relasi ke Wallet
+  wallets       Wallet[]
+  // Relasi ke IncomeTarget
+  incomeTargets IncomeTarget[]
   // Relasi ke Budget
   budgets       Budget[]
   // Relasi ke Subscription
@@ -49,6 +55,11 @@ model Expense {
   // Foreign key ke User
   userId String
   user   User   @relation(fields: [userId], references: [id])
+
+  // Hubungan ke Wallet (Opsional)
+  walletId String?
+  wallet   Wallet? @relation(fields: [walletId], references: [id], onDelete: SetNull)
+
   @@index([userId, category])
   @@index([userId, date])
 }
@@ -109,4 +120,56 @@ model SavingLog {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   @@index([userId, date])
   @@index([goalId])
+}
+
+model Wallet {
+  id        String   @id @default(cuid())
+  name      String   // Contoh: "BCA Tabungan", "GoPay Jajan" (Label bebas)
+  type      String   // "bank", "e_wallet", "cash"
+  provider  String   // Nama bank/e-wallet dari daftar (misal: "BCA", "GoPay", "Cash")
+  balance   Float    @default(0) // Saldo virtual dompet ini
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  incomes   Income[]
+  expenses  Expense[]
+
+  @@unique([userId, name])
+}
+
+model Income {
+  id        String   @id @default(cuid())
+  title     String
+  amount    Float
+  category  String   // "salary", "freelance", etc.
+  date      DateTime @default(now())
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Hubungan ke Wallet (Opsional)
+  walletId  String?
+  wallet    Wallet?  @relation(fields: [walletId], references: [id], onDelete: SetNull)
+
+  @@index([userId, category])
+  @@index([userId, date])
+}
+
+model IncomeTarget {
+  id        String   @id @default(cuid())
+  amount    Float    // Target pemasukan bulanan
+  month     Int      // 1-12
+  year      Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, month, year])
 }

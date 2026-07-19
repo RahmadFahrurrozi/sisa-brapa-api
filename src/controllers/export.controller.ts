@@ -158,3 +158,156 @@ export const exportToPdf = async (
     next(error);
   }
 };
+
+// Helper untuk menyaring income berdasarkan bulan, tahun, kategori
+const getFilteredIncomes = async (
+  userId: string,
+  month?: number,
+  year?: number,
+  category?: string,
+) => {
+  const where: any = { userId };
+
+  if (category) {
+    where.category = category;
+  }
+
+  if (month || year) {
+    const targetYear = year || new Date().getFullYear();
+    const targetMonth = month || new Date().getMonth() + 1;
+    where.date = {
+      gte: new Date(targetYear, targetMonth - 1, 1),
+      lt: new Date(targetYear, targetMonth, 1),
+    };
+  }
+
+  return await prisma.income.findMany({
+    where,
+    orderBy: { date: "desc" },
+  });
+};
+
+export const exportIncomesToExcel = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const userId = req.user!.id;
+    const month = req.query.month ? Number(req.query.month) : undefined;
+    const year = req.query.year ? Number(req.query.year) : undefined;
+    const category = req.query.category as string | undefined;
+
+    const incomes = await getFilteredIncomes(userId, month, year, category);
+
+    // Format data untuk Excel
+    const data = incomes.map((inc) => ({
+      "ID Pemasukan": inc.id,
+      Judul: inc.title,
+      "Jumlah (Rp)": inc.amount,
+      Kategori: inc.category,
+      Tanggal: inc.date.toISOString().split("T")[0],
+      Catatan: inc.note || "-",
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Laporan Pendapatan");
+
+    const buffer = XLSX.write(workbook, { type: "buffer", bookType: "xlsx" });
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="laporan-pendapatan-${Date.now()}.xlsx"`,
+    );
+    res.send(buffer);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const exportIncomesToPdf = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> => {
+  try {
+    const userId = req.user!.id;
+    const month = req.query.month ? Number(req.query.month) : undefined;
+    const year = req.query.year ? Number(req.query.year) : undefined;
+    const category = req.query.category as string | undefined;
+
+    const incomes = await getFilteredIncomes(userId, month, year, category);
+    const grandTotal = incomes.reduce((sum, inc) => sum + inc.amount, 0);
+
+    const doc = new PDFDocument({ margin: 50 });
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="laporan-pendapatan-${Date.now()}.pdf"`,
+    );
+
+    doc.pipe(res);
+
+    // Header Laporan
+    doc.fontSize(20).font("Helvetica-Bold").text("LAPORAN PENDAPATAN", { align: "center" });
+    doc.moveDown(0.5);
+
+    const periodStr = month && year ? `${month}/${year}` : "Semua Periode";
+    doc.fontSize(12).font("Helvetica").text(`Periode: ${periodStr}`, { align: "center" });
+    doc.text(`Total Pemasukan: Rp ${grandTotal.toLocaleString("id-ID")}`, { align: "center" });
+    doc.moveDown(2);
+
+    // Garis Pemisah
+    doc.strokeColor("#10b981").lineWidth(2).moveTo(50, doc.y).lineTo(560, doc.y).stroke();
+    doc.moveDown(1);
+
+    // Header Tabel
+    const tableTop = doc.y;
+    doc.fontSize(10).font("Helvetica-Bold");
+    doc.text("Tanggal", 50, tableTop, { width: 80 });
+    doc.text("Kategori", 140, tableTop, { width: 100 });
+    doc.text("Judul", 250, tableTop, { width: 180 });
+    doc.text("Jumlah", 440, tableTop, { width: 120, align: "right" });
+
+    doc.moveDown(0.5);
+    doc.strokeColor("#e5e7eb").lineWidth(1).moveTo(50, doc.y).lineTo(560, doc.y).stroke();
+    doc.moveDown(0.5);
+
+    // Konten Tabel
+    doc.font("Helvetica");
+    incomes.forEach((inc) => {
+      if (doc.y > 700) {
+        doc.addPage();
+        const newTableTop = doc.y;
+        doc.fontSize(10).font("Helvetica-Bold");
+        doc.text("Tanggal", 50, newTableTop, { width: 80 });
+        doc.text("Kategori", 140, newTableTop, { width: 100 });
+        doc.text("Judul", 250, newTableTop, { width: 180 });
+        doc.text("Jumlah", 440, newTableTop, { width: 120, align: "right" });
+        doc.moveDown(0.5);
+        doc.strokeColor("#e5e7eb").lineWidth(1).moveTo(50, doc.y).lineTo(560, doc.y).stroke();
+        doc.moveDown(0.5);
+        doc.font("Helvetica");
+      }
+
+      const currentY = doc.y;
+      doc.text(inc.date.toISOString().split("T")[0], 50, currentY, { width: 80 });
+      doc.text(inc.category, 140, currentY, { width: 100 });
+      doc.text(inc.title, 250, currentY, { width: 180 });
+      doc.text(`Rp ${inc.amount.toLocaleString("id-ID")}`, 440, currentY, {
+        width: 120,
+        align: "right",
+      });
+      doc.moveDown(1.2);
+    });
+
+    doc.end();
+  } catch (error) {
+    next(error);
+  }
+};

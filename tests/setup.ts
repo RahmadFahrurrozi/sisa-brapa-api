@@ -20,6 +20,9 @@ beforeEach(async () => {
     await prisma.subscription.deleteMany();
     await prisma.savingLog.deleteMany();
     await prisma.goal.deleteMany();
+    await prisma.income.deleteMany();
+    await prisma.incomeTarget.deleteMany();
+    await prisma.wallet.deleteMany();
     await prisma.user.deleteMany();
   } catch (err) {
     console.error("Gagal membersihkan database test:", err);
