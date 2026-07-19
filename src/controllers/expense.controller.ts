@@ -103,24 +103,51 @@ export const createExpense = async (
 ): Promise<void> => {
   try {
     const userId = req.user!.id;
-    const { title, amount, category, date, note } = req.body;
+    const { title, amount, category, date, note, walletId } = req.body;
 
-    const expense = await prisma.expense.create({
-      data: {
-        title,
-        amount,
-        category,
-        date: date ? new Date(date) : undefined,
-        note,
-        userId,
-      },
+    // 1. Validasi Wallet jika ada
+    if (walletId) {
+      const wallet = await prisma.wallet.findFirst({
+        where: { id: walletId, userId },
+      });
+      if (!wallet) {
+        res.status(404).json({ status: 404, message: "Wallet tidak ditemukan", data: null });
+        return;
+      }
+    }
+
+    const expense = await prisma.$transaction(async (tx) => {
+      // Buat Expense
+      const exp = await tx.expense.create({
+        data: {
+          title,
+          amount,
+          category,
+          date: date ? new Date(date) : undefined,
+          note,
+          userId,
+          walletId,
+        },
+      });
+
+      // Potong saldo wallet jika dikaitkan
+      if (walletId) {
+        await tx.wallet.update({
+          where: { id: walletId },
+          data: { balance: { decrement: amount } },
+        });
+      }
+
+      return exp;
     });
 
     // Invalidate Redis cache
     try {
       const keys = await redis.keys(`summary:${userId}:*`);
-      if (keys.length > 0) {
-        await redis.del(...keys);
+      const balanceKeys = await redis.keys(`balance:${userId}:*`);
+      const keysToDel = [...keys, ...balanceKeys];
+      if (keysToDel.length > 0) {
+        await redis.del(...keysToDel);
       }
     } catch (redisErr) {
       console.error("Redis cache invalidation error:", redisErr);
@@ -145,7 +172,7 @@ export const updateExpense = async (
   try {
     const userId = req.user!.id;
     const id = req.params.id as string;
-    const { title, amount, category, date, note } = req.body;
+    const { title, amount, category, date, note, walletId } = req.body;
 
     // Cek kepemilikan
     const existing = await prisma.expense.findFirst({
@@ -157,22 +184,60 @@ export const updateExpense = async (
       return;
     }
 
-    const updated = await prisma.expense.update({
-      where: { id },
-      data: {
-        title,
-        amount,
-        category,
-        date: date ? new Date(date) : undefined,
-        note,
-      },
+    // Validasi wallet baru jika dikirim
+    if (walletId && walletId !== existing.walletId) {
+      const wallet = await prisma.wallet.findFirst({
+        where: { id: walletId, userId },
+      });
+      if (!wallet) {
+        res.status(404).json({ status: 404, message: "Wallet tidak ditemukan", data: null });
+        return;
+      }
+    }
+
+    const updated = await prisma.$transaction(async (tx) => {
+      // 1. Kembalikan saldo wallet lama jika ada
+      if (existing.walletId) {
+        await tx.wallet.update({
+          where: { id: existing.walletId },
+          data: { balance: { increment: existing.amount } },
+        });
+      }
+
+      // 2. Update Expense
+      const exp = await tx.expense.update({
+        where: { id },
+        data: {
+          title,
+          amount,
+          category,
+          date: date ? new Date(date) : undefined,
+          note,
+          walletId: walletId === undefined ? existing.walletId : walletId,
+        },
+      });
+
+      // 3. Potong saldo wallet baru (atau yang lama jika tidak berubah tapi nominal berubah)
+      const targetWalletId = walletId === undefined ? existing.walletId : walletId;
+      const targetAmount = amount === undefined ? existing.amount : amount;
+
+      if (targetWalletId) {
+        await tx.wallet.update({
+          where: { id: targetWalletId },
+          data: { balance: { decrement: targetAmount } },
+        });
+      }
+
+      return exp;
     });
 
     // Invalidate Redis cache
     try {
       const keys = await redis.keys(`summary:${userId}:*`);
-      if (keys.length > 0) {
-        await redis.del(...keys);
+      const balanceKeys = await redis.keys(`balance:${userId}:*`);
+      const keysToDel = [...keys, ...balanceKeys];
+      if (keysToDel.length > 0) {
+        await redis.del(...keysToDel);
       }
     } catch (redisErr) {
       console.error("Redis cache invalidation error:", redisErr);
@@ -208,15 +273,28 @@ export const deleteExpense = async (
       return;
     }
 
-    await prisma.expense.delete({
-      where: { id },
+    await prisma.$transaction(async (tx) => {
+      // Pulihkan saldo wallet jika terkait
+      if (existing.walletId) {
+        await tx.wallet.update({
+          where: { id: existing.walletId },
+          data: { balance: { increment: existing.amount } },
+        });
+      }
+
+      // Hapus expense
+      await tx.expense.delete({
+        where: { id },
+      });
     });
 
     // Invalidate Redis cache
     try {
       const keys = await redis.keys(`summary:${userId}:*`);
-      if (keys.length > 0) {
-        await redis.del(...keys);
+      const balanceKeys = await redis.keys(`balance:${userId}:*`);
+      const keysToDel = [...keys, ...balanceKeys];
+      if (keysToDel.length > 0) {
+        await redis.del(...keysToDel);
       }
     } catch (redisErr) {
       console.error("Redis cache invalidation error:", redisErr);

@@ -180,15 +180,12 @@ describe("Expense and Budget Integration Tests", () => {
 
   describe("GET /api/expenses/analytics - Analytics Presets and Custom Ranges", () => {
     it("should get analytics with 30d range successfully", async () => {
-      await request(app)
-        .post("/api/expenses")
-        .set("Authorization", `Bearer ${token}`)
-        .send({
-          title: "Makan Siang",
-          amount: 20000,
-          category: "food",
-          date: new Date().toISOString(),
-        });
+      await request(app).post("/api/expenses").set("Authorization", `Bearer ${token}`).send({
+        title: "Makan Siang",
+        amount: 20000,
+        category: "food",
+        date: new Date().toISOString(),
+      });
 
       const response = await request(app)
         .get("/api/expenses/analytics?range=30d")

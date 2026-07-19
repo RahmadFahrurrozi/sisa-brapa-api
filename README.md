@@ -86,47 +86,54 @@ Every request funnels through rate limiting and auth before it touches business 
 ## Core Features
 
 ### Auth & Security
+
 Short-lived access tokens paired with refresh tokens, so sessions stay alive without leaving long-lived tokens lying around. Logged-out tokens get pushed into a Redis blacklist with an automatic TTL no cron jobs cleaning up after themselves. Login and register endpoints get their own tighter rate limits on top of the global one, and Helmet + CORS keep the HTTP layer locked down.
 
 ### Expense Management
+
 Full CRUD on transactions title, amount, category (food, transport, utilities, whatever), date, optional notes. Indexed queries mean filtering by category or date range stays fast even as the table grows.
 
 ### Smart Budgeting
+
 Set a monthly cap, either per category or across everything. The system won't let you accidentally create two active budgets for the same category in the same month one source of truth, always.
 
 ### Subscriptions & Recurring Bills
+
 Netflix, Spotify, whatever else quietly drains your account every month track it here. Supports weekly, monthly, and yearly billing cycles, and the status (active, pending, cancelled, expired) updates itself based on the current date instead of you having to babysit it.
 
 ### Goals & Savings Log
+
 Set a target "Emergency Fund," "New Laptop," whatever you're saving toward — with a deadline and a running balance. Every deposit gets its own entry in the Saving Log, so you can always see exactly how you got to your total, not just the total itself.
 
 ### Export Engine
+
 Pull your full expense history as a clean `.xlsx`, or generate a formal `.pdf` report with grand totals and auto-paginated tables when the data won't fit on one page.
 
 ### Analytics & Insights
+
 Category breakdowns as percentages, spending trends grouped by day or month across any window (today, 7 days, 30 days, 6 months, or a custom range), and a month-over-month comparison that tells you flat out whether you're saving or bleeding money compared to the same point last month.
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology | Why |
-|---|---|---|
-| Runtime | ![Node.js](https://img.shields.io/badge/-Node.js_20-339933?style=flat-square&logo=nodedotjs&logoColor=white) | Fast, event-driven, everywhere |
-| Language | ![TypeScript](https://img.shields.io/badge/-TypeScript_5-3178C6?style=flat-square&logo=typescript&logoColor=white) | Type safety end to end, zero `any` |
-| Framework | ![Express](https://img.shields.io/badge/-Express_4-000000?style=flat-square&logo=express&logoColor=white) | Lightweight, unopinionated, battle-tested |
-| Database | ![PostgreSQL](https://img.shields.io/badge/-PostgreSQL_16-4169E1?style=flat-square&logo=postgresql&logoColor=white) | Relational integrity where money is involved |
-| ORM | ![Prisma](https://img.shields.io/badge/-Prisma_5-2D3748?style=flat-square&logo=prisma&logoColor=white) | Type-safe queries, painless migrations |
-| Cache / Store | ![Redis](https://img.shields.io/badge/-Redis_7-DC382D?style=flat-square&logo=redis&logoColor=white) | Token blacklisting + hot analytics caching |
-| Validation | ![Zod](https://img.shields.io/badge/-Zod_3-3E67B1?style=flat-square&logo=zod&logoColor=white) | Keeps garbage data out at the door |
-| Docs | ![Swagger](https://img.shields.io/badge/-OpenAPI_3.0-85EA2D?style=flat-square&logo=swagger&logoColor=black) | Interactive, testable API docs |
-| Testing | ![Vitest](https://img.shields.io/badge/-Vitest_1-6E9F18?style=flat-square&logo=vitest&logoColor=white) | Fast, modern unit + integration tests |
-| Containers | ![Docker](https://img.shields.io/badge/-Docker_24-2496ED?style=flat-square&logo=docker&logoColor=white) | Consistent local + prod environments |
-| CI/CD | ![GitHub Actions](https://img.shields.io/badge/-GitHub_Actions-2088FF?style=flat-square&logo=githubactions&logoColor=white) | Test and ship on every push |
-| Reverse Proxy | ![Nginx](https://img.shields.io/badge/-Nginx-009639?style=flat-square&logo=nginx&logoColor=white) | TLS termination + request routing |
-| Deployment | ![Vercel](https://img.shields.io/badge/-Vercel-000000?style=flat-square&logo=vercel&logoColor=white) | Serverless-friendly hosting |
-| DB Hosting | ![Neon](https://img.shields.io/badge/-Neon-00E599?style=flat-square&logo=postgresql&logoColor=white) | Serverless Postgres |
-| Cache Hosting | ![Upstash](https://img.shields.io/badge/-Upstash-00E9A3?style=flat-square&logo=redis&logoColor=white) | Serverless Redis |
+| Layer         | Technology                                                                                                                  | Why                                          |
+| ------------- | --------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| Runtime       | ![Node.js](https://img.shields.io/badge/-Node.js_20-339933?style=flat-square&logo=nodedotjs&logoColor=white)                | Fast, event-driven, everywhere               |
+| Language      | ![TypeScript](https://img.shields.io/badge/-TypeScript_5-3178C6?style=flat-square&logo=typescript&logoColor=white)          | Type safety end to end, zero `any`           |
+| Framework     | ![Express](https://img.shields.io/badge/-Express_4-000000?style=flat-square&logo=express&logoColor=white)                   | Lightweight, unopinionated, battle-tested    |
+| Database      | ![PostgreSQL](https://img.shields.io/badge/-PostgreSQL_16-4169E1?style=flat-square&logo=postgresql&logoColor=white)         | Relational integrity where money is involved |
+| ORM           | ![Prisma](https://img.shields.io/badge/-Prisma_5-2D3748?style=flat-square&logo=prisma&logoColor=white)                      | Type-safe queries, painless migrations       |
+| Cache / Store | ![Redis](https://img.shields.io/badge/-Redis_7-DC382D?style=flat-square&logo=redis&logoColor=white)                         | Token blacklisting + hot analytics caching   |
+| Validation    | ![Zod](https://img.shields.io/badge/-Zod_3-3E67B1?style=flat-square&logo=zod&logoColor=white)                               | Keeps garbage data out at the door           |
+| Docs          | ![Swagger](https://img.shields.io/badge/-OpenAPI_3.0-85EA2D?style=flat-square&logo=swagger&logoColor=black)                 | Interactive, testable API docs               |
+| Testing       | ![Vitest](https://img.shields.io/badge/-Vitest_1-6E9F18?style=flat-square&logo=vitest&logoColor=white)                      | Fast, modern unit + integration tests        |
+| Containers    | ![Docker](https://img.shields.io/badge/-Docker_24-2496ED?style=flat-square&logo=docker&logoColor=white)                     | Consistent local + prod environments         |
+| CI/CD         | ![GitHub Actions](https://img.shields.io/badge/-GitHub_Actions-2088FF?style=flat-square&logo=githubactions&logoColor=white) | Test and ship on every push                  |
+| Reverse Proxy | ![Nginx](https://img.shields.io/badge/-Nginx-009639?style=flat-square&logo=nginx&logoColor=white)                           | TLS termination + request routing            |
+| Deployment    | ![Vercel](https://img.shields.io/badge/-Vercel-000000?style=flat-square&logo=vercel&logoColor=white)                        | Serverless-friendly hosting                  |
+| DB Hosting    | ![Neon](https://img.shields.io/badge/-Neon-00E599?style=flat-square&logo=postgresql&logoColor=white)                        | Serverless Postgres                          |
+| Cache Hosting | ![Upstash](https://img.shields.io/badge/-Upstash-00E9A3?style=flat-square&logo=redis&logoColor=white)                       | Serverless Redis                             |
 
 ---
 
@@ -149,13 +156,13 @@ Full schema lives in [`prisma/schema.prisma`](prisma/schema.prisma).
 
 Interactive docs are served live at `/docs` once the server's running.
 
-| Route | What it does |
-|---|---|
-| `/api/auth` | Register, login, refresh token, logout |
-| `/api/expenses` | Create, update, delete, export (PDF/Excel), trend analytics |
-| `/api/budgets` | Set and monitor monthly category budgets |
-| `/api/subscriptions` | Manage recurring bills and due-date tracking |
-| `/api/goals` | Savings targets and deposit log |
+| Route                | What it does                                                |
+| -------------------- | ----------------------------------------------------------- |
+| `/api/auth`          | Register, login, refresh token, logout                      |
+| `/api/expenses`      | Create, update, delete, export (PDF/Excel), trend analytics |
+| `/api/budgets`       | Set and monitor monthly category budgets                    |
+| `/api/subscriptions` | Manage recurring bills and due-date tracking                |
+| `/api/goals`         | Savings targets and deposit log                             |
 
 ---
 

@@ -12,8 +12,11 @@ import { expenseRoutes } from "./routes/expense.routes";
 import { budgetRoutes } from "./routes/budget.routes";
 import { subscriptionRoutes } from "./routes/subscription.routes";
 import { goalRoutes } from "./routes/goal.routes";
+import { walletRoutes } from "./routes/wallet.routes";
+import { incomeRoutes } from "./routes/income.routes";
+import { transactionRoutes } from "./routes/transaction.routes";
+import { analyticsRoutes } from "./routes/analytics.routes";
 import { errorHandler } from "./middlewares/error.middleware";
-import logger from "./utils/logger";
 
 dotenv.config();
 
@@ -97,6 +100,10 @@ app.use("/api/expenses", expenseRoutes);
 app.use("/api/budgets", budgetRoutes);
 app.use("/api/subscriptions", subscriptionRoutes);
 app.use("/api/goals", goalRoutes);
+app.use("/api/wallets", walletRoutes);
+app.use("/api/incomes", incomeRoutes);
+app.use("/api/transactions", transactionRoutes);
+app.use("/api/analytics", analyticsRoutes);
 
 // Health check
 app.get("/health", (_req, res) => {
