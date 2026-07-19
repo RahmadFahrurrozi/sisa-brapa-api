@@ -16,6 +16,7 @@ import { walletRoutes } from "./routes/wallet.routes";
 import { incomeRoutes } from "./routes/income.routes";
 import { transactionRoutes } from "./routes/transaction.routes";
 import { analyticsRoutes } from "./routes/analytics.routes";
+import { profileRoutes } from "./routes/profile.routes";
 import { errorHandler } from "./middlewares/error.middleware";
 
 dotenv.config();
@@ -104,6 +105,7 @@ app.use("/api/wallets", walletRoutes);
 app.use("/api/incomes", incomeRoutes);
 app.use("/api/transactions", transactionRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.use("/api/profile", profileRoutes);
 
 // Health check
 app.get("/health", (_req, res) => {

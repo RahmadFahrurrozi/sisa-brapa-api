@@ -24,6 +24,8 @@ model User {
 
   refreshToken  String?
 
+  profile       Profile?
+
   // Relasi ke Expense
   expenses      Expense[]
   // Relasi ke Income
@@ -172,4 +174,24 @@ model IncomeTarget {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, month, year])
+}
+
+model Profile {
+  id               String    @id @default(cuid())
+  bio              String?   // Slogan/Bio keuangan, contoh: "Nabung demi masa depan"
+  avatarUrl        String?   // URL foto profil
+  occupation       String?   // Pekerjaan, contoh: "Software Engineer"
+  monthlyIncomeEst Float?    // Estimasi pendapatan bulanan (opsional, untuk hitung saving rate)
+  currency         String    @default("IDR") // Preferensi mata uang
+  language         String    @default("id")  // Preferensi bahasa
+  birthDate        DateTime? // Tanggal lahir
+  financialType    String    @default("balanced") // "frugal", "spender", "investor", "balanced"
+  phoneNumber      String?
+  address          String?
+  
+  userId           String    @unique
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 }
