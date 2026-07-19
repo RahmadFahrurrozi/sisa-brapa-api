@@ -159,10 +159,15 @@ Interactive docs are served live at `/docs` once the server's running.
 | Route                | What it does                                                |
 | -------------------- | ----------------------------------------------------------- |
 | `/api/auth`          | Register, login, refresh token, logout                      |
+| `/api/profile`       | User profile details, settings, and dynamic financial stats |
 | `/api/expenses`      | Create, update, delete, export (PDF/Excel), trend analytics |
+| `/api/incomes`       | Create, update, delete, targets, and Excel/PDF reports      |
+| `/api/wallets`       | Manage virtual wallets, banks, e-wallets, and cash balances |
 | `/api/budgets`       | Set and monitor monthly category budgets                    |
 | `/api/subscriptions` | Manage recurring bills and due-date tracking                |
 | `/api/goals`         | Savings targets and deposit log                             |
+| `/api/transactions`  | Unified chronological timeline of incomes and expenses      |
+| `/api/analytics`     | Total balance summaries and income-vs-expense comparisons   |
 
 ---
 
